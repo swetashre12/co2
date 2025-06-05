@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../partials/head'); %>
+</head>
+
+<body class="container">
+  <header style="vertical-align: middle;">
+    <%- include('../partials/header'); %>
+  </header>
+
+  <main>
+    <div class="container">
+      <div class="justify-content-center">
+        <div class="form-group p-2 m-2">
+          <form action="/getxmllink" method="POST">
+            <label style="margin-top: 20px" for="xmllink">Paste XML Link Here: </label>
+            <input type="text" class="form-control" id="xmllink" name="xmllink" placeholder="Link here!">
+            <hr />
+            <div id="settings_drop">
+              <span id="settings_drop_indicator">-v-</span>
+              <span id='settings_drop_text'>Expand Settings</span>
+            </div>
+            <script>
+              let showing = false;
+              document.getElementById("settings_drop").onclick = function() {
+                let display = (showing) ? "none" : "block";
+                let indicator = (showing) ? "-v-" : "-^-";
+                let text = (showing) ? "Expand Settings" : "Collapse Settings";
+
+                document.getElementById('settings_container').style.display = display;
+                document.getElementById('settings_drop_indicator').innerText = indicator;
+                document.getElementById('settings_drop_text').innerText = text;
+                showing = !showing;
+              }
+            </script>
+            <div id="settings_container">
+              <%- include('../partials/settings'); %>
+            </div>
+
+            <hr />
+            <button style="margin-top: 20px; background: #63a331;" type="submits" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+        <div id="results" class="p-2 m-2">
+          <% if (showResults) { %>
+          <p id="report"><%- include('../partials/report', {desktopEmissionsC: desktopEmissionsC, mobileEmissionsC:
+                mobileEmissionsC, desktopEmissionsNC: desktopEmissionsNC, mobileEmissionsNC: mobileEmissionsNC,
+                linksList: linksList, params: params}); %></p>
+
+          <table id="reportTable" class="table responsive table-hover finalTable">
+
+            <thead style="background: #63a331; color: white">
+
+              <tr>
+                <th>Link</th>
+                <% if (params.runDesktopNC) { %>
+                <th>Uncached Desktop</th>
+                <% } %>
+                <% if (params.runMobileNC) { %>
+                <th>Uncached Mobile</th>
+                <% } %>
+
+                <% if (params.runDesktopC) { %>
+                <th>Cached Desktop</th>
+                <% } %>
+                <% if (params.runMobileC) { %>
+                <th>Cached Mobile</th>
+                <% } %>
+              </tr>
+            </thead>
+            <% var totalDesktopSumNC=0; var totalMobileSumNC=0;var totalDesktopSumC=0; var totalMobileSumC=0; %>
+            <% for (var i=0; i < desktopEmissionsNC.length; i++) { %>
+            <% if (i === 5 && desktopEmissionsNC.length > 5) { %>
+            <tr id="show_all">
+              <td>Click to display <%= desktopEmissionsNC.length - 5  %> more results...</td>
+            </tr>
+            <% } %>
+            <script>
+              document.getElementById("show_all").onclick = function() {
+                let hiddens = document.getElementsByClassName("results_tail");
+                for (const h of hiddens) {
+                  h.style.display = "table-row";
+                }
+                document.getElementById("show_all").style.display = "none";
+              }
+            </script>
+            <tr class="<%= (i > 4) ? "results_tail" :"results_head" ;%>">
+              <% var linkName=linksList[i].split('/').pop(); <!-- use shortened URL for home page -->
+                      if (!linkName.trim()) {
+                      var linkParts = linksList[i].split('/');
+                      linkName = (linkParts[2] || linksList[i]) + " (Home)";
+                      }
+                      var toPageSpeed = 'https://pagespeed.web.dev/analysis?url=https%3A%2F%2F' +
+                      linksList[i].substring(8) + '%2F';
+                      %>
+              <td><a target="_blank" rel="noopener noreferrer" href="<%= toPageSpeed %>">
+                  <%= linkName %>
+                </a></td>
+              <% if (params.runDesktopNC) { %>
+              <% var currDesktopSumNC=Math.round(desktopEmissionsNC[i]*1000)/1000 %>
+              <td>
+                <%= currDesktopSumNC.toFixed(3) + " g" %>
+              </td>
+              <% totalDesktopSumNC +=currDesktopSumNC %>
+              <% } %>
+
+              <% if (params.runMobileNC) { %>
+              <% var currMobileSumNC=Math.round(mobileEmissionsNC[i]*1000)/1000 %>
+              <td>
+                <%= currMobileSumNC.toFixed(3) + " g" %>
+              </td>
+              <% totalMobileSumNC +=currMobileSumNC %>
+              <% } %>
+
+              <% if (params.runDesktopC) { %>
+              <% var currDesktopSumC=Math.round(desktopEmissionsC[i]*1000)/1000 %>
+              <td>
+                <%= currDesktopSumC.toFixed(3) + " g" %>
+              </td>
+              <% totalDesktopSumC +=currDesktopSumC %>
+              <% } %>
+
+              <% if (params.runMobileC) { %>
+              <% var currMobileSumC=Math.round(mobileEmissionsC[i]*1000)/1000 %>
+              <td>
+                <%= currMobileSumC.toFixed(3) + " g" %>
+              </td>
+              <% totalMobileSumC +=currMobileSumC %>
+              <% } %>
+
+
+            </tr>
+            <% } %>
+          </table>
+          <table id="reportTable" class="table responsive table-hover finalTable">
+
+            <thead style="background: #63a331; color: white">
+              <tr>
+                <th>Totals: </th>
+                <% if (params.runDesktopNC) { %>
+                <th> </th>
+                <% } %>
+                <% if (params.runMobileNC) { %>
+                <th> </th>
+                <% } %>
+                <% if (params.runDesktopC) { %>
+                <th> </th>
+                <% } %>
+                <% if (params.runMobileC) { %>
+                <th> </th>
+                <% } %>
+              </tr>
+            </thead>
+            <tr>
+              <td>
+                <%= "" + linksList.length %>
+              </td>
+              <% if (params.runDesktopNC) { %>
+              <td>
+                <%= totalDesktopSumNC.toFixed(3) + " g" %>
+              </td>
+              <% } %>
+              <% if (params.runMobileNC) { %>
+              <td>
+                <%= totalMobileSumNC.toFixed(3) + " g" %>
+              </td>
+              <% } %>
+              <% if (params.runDesktopC) { %>
+              <td>
+                <%= totalDesktopSumC.toFixed(3) + " g" %>
+              </td>
+              <% } %>
+              <% if (params.runMobileC) { %>
+              <td>
+                <%= totalMobileSumC.toFixed(3) + " g" %>
+              </td>
+              <% } %>
+
+            </tr>
+          </table>
+          <button id="tableToCSV" style="margin-top: 20px; background: #63a331;" type="submits" class="btn btn-primary">Download Report</button>
+          <script>
+            document.getElementById('tableToCSV').addEventListener('click', async () => {
+              const table = document.getElementById('reportTable');
+              const tableToArray = [];
+              for (let row of table.rows) {
+                const rowArray = [];
+                for (let cell of row.cells) {
+                  if (cell.tagName = "TD") {
+                    rowArray.push(cell.innerText);
+                  }
+                }
+                tableToArray.push(rowArray);
+              }
+
+              var csv = '';
+              for (let row of tableToArray) {
+                csv += row.join(',') + '\n';
+              }
+
+              const blob = new Blob([csv], {
+                type: 'text/csv'
+              });
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'report.csv';
+              a.click();
+              window.URL.revokeObjectURL(url);
+            });
+          </script>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer>
+    <%- include('../partials/footer'); %>
+  </footer>
+</body>
+
+</html>
