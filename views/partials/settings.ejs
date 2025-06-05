@@ -1,0 +1,37 @@
+ <fieldset>
+   <hr />
+   <div>Include the following results in report:</div>
+   <hr />
+   <table>
+     <tbody>
+       <tr id="cache_row">
+         <td>cache</td>
+         <td>off</td>
+         <td>on</td>
+       </tr>
+       <tr>
+         <td>desktop</td>
+         <td><input type="checkbox" id="desktopNoCache" name="dNC" checked /></td>
+         <td> <input type="checkbox" id="desktopCache" name="dC" /></td>
+       </tr>
+       <tr>
+         <td> mobile</td>
+         <td><input type="checkbox" id="mobileNoCache" name="mNC" checked /></td>
+         <td> <input type="checkbox" id="mobileCache" name="mC" /></td>
+       </tr>
+     </tbody>
+   </table>
+   <hr />
+   <div>
+     <div>Sort using results from: </div>
+     <hr />
+     <input type="checkbox" id="sortCheck" name="mobileSort" />
+     <label for="mobileSort">mobile</label><br />
+     <input type="checkbox" id="sortCheck" name="cacheSort" />
+     <label for="mobileSort">cached</label>
+     <hr />
+     <span>Limits:</span>
+     <hr />
+     <input type="checkbox" id="limit" name="limit" />
+     <label for="limit">Limit traversal to first 3 URLs</label>
+ </fieldset>

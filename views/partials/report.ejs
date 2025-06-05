@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+<body>
+  <div class="justify-content-center">
+    <canvas id="myChart" style="width: 100%;" class="p-2 m-2"></canvas>
+  </div>
+  <script>
+    let view = '<%- params.useMobileSort ? "mobile " : "desktop ";%>';
+    let cached = '<%- params.useCacheSort ? "cached " : "uncached ";%>';
+    let text = "via " + view + cached + "visit";
+    var yString = '<%- desktopEmissionsNC.slice(0, 4+1);%>';
+    var yToArray = yString.split(",");
+    var xString = '<%- linksList.slice(0, 4+1);%>';
+    var xToArray = xString.split(",");
+    var yValues = yToArray;
+    var xValues = xToArray;
+    var barColors = [
+      "rgba(255, 99, 132, 0.2)",
+      "rgba(255, 159, 64, 0.2)",
+      "rgba(255, 205, 86, 0.2)",
+      "rgba(75, 192, 192, 0.2)",
+      "rgba(54, 162, 235, 0.2)",
+    ];
+    var borderColors = [
+      "rgb(255, 99, 132)",
+      "rgb(255, 159, 64)",
+      "rgb(255, 205, 86)",
+      "rgb(75, 192, 192)",
+      "rgb(54, 162, 235)",
+    ];
+    new Chart("myChart", {
+      type: "bar",
+      data: {
+        labels: xValues,
+        datasets: [{
+          backgroundColor: barColors,
+          data: yValues,
+          borderColor: borderColors,
+          borderWidth: 2,
+        }, ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        legend: {
+          display: false
+        },
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true,
+            },
+            scaleLabel: {
+              display: true,
+              labelString: "grams of CO2",
+              fontStyle: "bold",
+            },
+          }, ],
+        },
+        title: {
+          display: true,
+          text: text,
+        },
+      },
+    });
+  </script>
+</body>
+
+</html>
