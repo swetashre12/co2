@@ -5,9 +5,9 @@
    <table>
      <tbody>
        <tr id="cache_row">
-         <td>cache</td>
-         <td>off</td>
-         <td>on</td>
+         <td>Option</td>
+         <td>Uncache</td>
+         <td>Cache</td>
        </tr>
        <tr>
          <td>desktop</td>
@@ -23,15 +23,15 @@
    </table>
    <hr />
    <div>
-     <div>Sort using results from: </div>
+     <!-- <div>Sort using results from: </div>
      <hr />
      <input type="checkbox" id="sortCheck" name="mobileSort" />
      <label for="mobileSort">mobile</label><br />
      <input type="checkbox" id="sortCheck" name="cacheSort" />
      <label for="mobileSort">cached</label>
-     <hr />
+     <hr /> -->
      <span>Limits:</span>
      <hr />
-     <input type="checkbox" id="limit" name="limit" />
-     <label for="limit">Limit traversal to first 3 URLs</label>
+     <label for="limit">Limit traversal to first N URLs:</label>
+    <input type="number" id="limit" name="limit" min="1" max="10" value="3" />
  </fieldset>
