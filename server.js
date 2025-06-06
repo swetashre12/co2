@@ -27,6 +27,7 @@ async function main(req, res) {
       mobileEmissions: mobileEmissions,
       linksList: links,
       showResults: false,
+     
     });
   });
 
@@ -61,7 +62,10 @@ async function handlePost(req, res) {
       useMobileSort: await req.body.mobileSort === "on",
       useCacheSort: await req.body.cacheSort === "on",
     }
-    let limit = await req.body.limit === "on"
+    let limit = parseInt(req.body.limit);
+      if (isNaN(limit) || limit < 1 || limit > 10) {
+        limit = null;
+      }
     //server side validation, resets to mobile and desktop with no caching if invalid combo
     if (!(params.runMobileC || params.runMobileNC || params.runDesktopC || params.runDesktopNC)) {
       params.runDesktopNC = true;
@@ -78,7 +82,10 @@ async function handlePost(req, res) {
     }
 
 
-    links = limit ? [links[0], links[1], links[2]] : links;
+      if (limit) {
+    links = links.slice(0, limit);
+  }
+    params.limit = limit;
     let transferData = await ts.processLinks(links, params);
 
     let emissionData = getCO2FromTransfers(await transferData, params);

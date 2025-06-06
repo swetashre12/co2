@@ -18,15 +18,21 @@
             <label style="margin-top: 20px" for="xmllink">Paste XML Link Here: </label>
             <input type="text" class="form-control" id="xmllink" name="xmllink" placeholder="Link here!">
             <hr />
-            <div id="settings_drop">
-              <span id="settings_drop_indicator">-v-</span>
-              <span id='settings_drop_text'>Expand Settings</span>
-            </div>
+           <div id="settings_drop" class="settings-toggle arrow">
+            <span id="settings_drop_text">Expand Settings</span>
+            <span id="settings_drop_indicator">&#9662;</span>
+          </div>
             <script>
+              function decodeHtmlEntity(entity) {
+                      const temp = document.createElement('div');
+                      temp.innerHTML = entity;
+                      return temp.textContent;
+                    }
               let showing = false;
               document.getElementById("settings_drop").onclick = function() {
                 let display = (showing) ? "none" : "block";
-                let indicator = (showing) ? "-v-" : "-^-";
+                let rawIndicator = showing ? "&#9662;" : "&#9652;";
+              let indicator = decodeHtmlEntity(rawIndicator);
                 let text = (showing) ? "Expand Settings" : "Collapse Settings";
 
                 document.getElementById('settings_container').style.display = display;
