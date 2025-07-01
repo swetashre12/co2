@@ -5,9 +5,17 @@ const Sitemapper = require('sitemapper');
 const { co2 } = require('@tgwf/co2');
 const puppeteer = require('puppeteer');
 const ts = require('./transfersize');
+const multer = require('multer');
+const fs = require('fs');
+const { BetaAnalyticsDataClient } = require('@google-analytics/data');
+const path = require('path');
 
 /* global vars */
 const app = express();
+const upload = multer({ dest: 'uploads/' }); 
+const analyticsClient = new BetaAnalyticsDataClient({
+  keyFilename: path.join('uploads/', 'neelgai-9b8d68b67376.json') 
+});
 var links = new Array();
 var desktopEmissions = new Array();
 var mobileEmissions = new Array();
@@ -27,23 +35,77 @@ async function main(req, res) {
       mobileEmissions: mobileEmissions,
       linksList: links,
       showResults: false,
+      ga4PageUserData: [],
      
     });
   });
 
-  app.post('/getxmllink', handlePost);
+  app.post('/getxmllink', upload.single('keyFile'), handlePost);
 
   app.listen(8080);
   console.log('Server is listening on port 8080');
 }
+// async function logActiveUsers(propertyId) {
+//   try {
+//     const [response] = await analyticsClient.runReport({
+//       property: `properties/${propertyId}`,
+//       dateRanges: [{ startDate: '8daysAgo', endDate: 'today' }],
+//       metrics: [{ name: 'activeUsers' }],
+//     });
+
+//     const activeUsers = response.rows?.[0]?.metricValues?.[0]?.value || '0';
+//     console.log(`Active users in GA4 Property ${propertyId}: ${activeUsers}`);
+//   } catch (error) {
+//     console.error('Error fetching active users:', error.message);
+//   }
+// }
 
 async function handlePost(req, res) {
   if (!currentlyProcessing) {
 
     currentlyProcessing = true;
-    // reset data
-    let links = new Array();
+     const propertyId = req.body.propertyId || null;
 
+      const keyFilePath = req.file?.path || null;
+
+      let ga4PageUserData = [];
+
+    if (propertyId && keyFilePath) {
+      try {
+        // Read and parse the key file
+        const keyFileContent = JSON.parse(fs.readFileSync(keyFilePath, 'utf8'));
+
+        // Authenticate GA4 client
+        const analyticsDataClient = new BetaAnalyticsDataClient({
+          credentials: keyFileContent
+        });
+
+        // Run GA4 report
+        const [response] = await analyticsDataClient.runReport({
+          property: `properties/${propertyId}`,
+          dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+          dimensions: [{ name: 'pagePath' }],
+          metrics: [{ name: 'activeUsers' }],
+        });
+
+        // Process GA4 response
+        response.rows.forEach(row => {
+          const page = row.dimensionValues[0].value; // pagePath
+          const users = row.metricValues[0].value;   // activeUsers
+          console.log(`Page: ${page}, Active Users: ${users}`);
+          ga4PageUserData.push({ page, users });
+        });
+      
+
+
+      fs.unlinkSync(keyPath);
+      } catch (err) {
+              console.error('GA4 Analytics Error:', err);
+            
+            }
+          }
+   
+    let links = new Array();
     var xmllink = null;
     var sitemapper = new Sitemapper();
     sitemapper.timeout = 5000;
@@ -101,7 +163,8 @@ async function handlePost(req, res) {
       mobileEmissionsC: p.mobileEmissionsC,
       params: params,
       linksList: p.links,
-      showResults: true
+      showResults: true,
+      ga4PageUserData: ga4PageUserData
     });
     currentlyProcessing = false;
   }

@@ -14,10 +14,19 @@
     <div class="container">
       <div class="justify-content-center">
         <div class="form-group p-2 m-2">
-          <form action="/getxmllink" method="POST">
+          <form action="/getxmllink" method="POST" enctype="multipart/form-data">
             <label style="margin-top: 20px" for="xmllink">Paste XML Link Here: </label>
             <input type="text" class="form-control" id="xmllink" name="xmllink" placeholder="Link here!">
             <hr />
+            <label for="propertyId">GA4 Property ID:</label>
+            <input type="text" name="propertyId"  placeholder="e.g. 123456789">
+
+            <!-- GA4 Service Account JSON Upload -->
+            <label for="keyFile">Upload Service Account JSON:</label>
+            <input type="file" name="keyFile" accept=".json"  />
+
+             <hr />
+             
            <div id="settings_drop" class="settings-toggle arrow">
             <span id="settings_drop_text">Expand Settings</span>
             <span id="settings_drop_indicator">&#9662;</span>
@@ -50,6 +59,14 @@
           </form>
         </div>
         <div id="results" class="p-2 m-2">
+          <% if (ga4PageUserData && ga4PageUserData.length > 0) { %>
+  <h2>Google Analytics 4 - Active Users per Page</h2>
+  <ul>
+    <% ga4PageUserData.forEach(function(item) { %>
+      <li>Page: <%= item.page %>, Active Users: <%= item.users %></li>
+    <% }) %>
+  </ul>
+<% } %>
           <% if (showResults) { %>
           <p id="report"><%- include('../partials/report', {desktopEmissionsC: desktopEmissionsC, mobileEmissionsC:
                 mobileEmissionsC, desktopEmissionsNC: desktopEmissionsNC, mobileEmissionsNC: mobileEmissionsNC,
@@ -61,6 +78,9 @@
 
               <tr>
                 <th>Link</th>
+                <% if (ga4PageUserData && ga4PageUserData.length > 0) { %>
+                  <th>Active Users</th>
+                <% } %>
                 <% if (params.runDesktopNC) { %>
                 <th>Uncached Desktop</th>
                 <% } %>
@@ -82,7 +102,19 @@
             <tr id="show_all">
               <td>Click to display <%= desktopEmissionsNC.length - 5  %> more results...</td>
             </tr>
+            
             <% } %>
+            <%
+            // Extract path from full URL like 'https://example.com/about'
+            var fullUrl = linksList[i];
+            var pathOnly = fullUrl.replace(/^https?:\/\/[^/]+/, '');
+            var activeUsers = 0;
+            ga4PageUserData.forEach(function(item) {
+              if (item.page === pathOnly) {
+                activeUsers = item.users;
+              }
+            });
+            %>
             <script>
               document.getElementById("show_all").onclick = function() {
                 let hiddens = document.getElementsByClassName("results_tail");
@@ -104,6 +136,9 @@
               <td><a target="_blank" rel="noopener noreferrer" href="<%= toPageSpeed %>">
                   <%= linkName %>
                 </a></td>
+                 <% if (ga4PageUserData && ga4PageUserData.length > 0) { %>
+                <td><%= activeUsers %></td>
+              <% } %>
               <% if (params.runDesktopNC) { %>
               <% var currDesktopSumNC=Math.round(desktopEmissionsNC[i]*1000)/1000 %>
               <td>
@@ -111,6 +146,7 @@
               </td>
               <% totalDesktopSumNC +=currDesktopSumNC %>
               <% } %>
+             
 
               <% if (params.runMobileNC) { %>
               <% var currMobileSumNC=Math.round(mobileEmissionsNC[i]*1000)/1000 %>
